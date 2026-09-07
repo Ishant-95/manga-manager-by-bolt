@@ -19,11 +19,16 @@
     --font-body: "DM Sans", -apple-system, sans-serif;
     --font-mono: "DM Mono", "SFMono-Regular", Consolas, monospace;
 
+    --folder-drawer: hsl(267, 18%, 18%);
+    --folder-drawer-inner: hsl(267, 22%, 10%);
+    --folder-drawer-border: hsl(267, 20%, 28%);
+    --folder-drawer-lip: hsl(267, 16%, 22%);
     --folder-stripe: hsl(38, 60%, 52%);
-    --folder-stripe-shadow: hsl(267 40% 3% / 0.4);
+    --folder-stripe-shadow: hsl(267 40% 3% / 0.45);
+    --folder-card-shadow: hsl(267 40% 3% / 0.5);
+    --folder-card-border: hsl(0 0% 100% / 0.08);
     --folder-fastener: hsl(38, 35%, 50%);
     --folder-fastener-highlight: hsl(38, 50%, 78%);
-    --folder-card-border: hsl(0 0% 100% / 0.09);
   }
 
   body {
@@ -36,20 +41,16 @@
     -webkit-font-smoothing: antialiased;
   }
 
-  .font-display {
-    font-family: var(--font-display);
-  }
-
-  .font-mono {
-    font-family: var(--font-mono);
-  }
+  .font-display { font-family: var(--font-display); }
+  .font-mono { font-family: var(--font-mono); }
 }
 
 @layer components {
   /* ============================================================
-     Manga Card — Folder Stack Interaction
-     4 thumbnail layers rise progressively as cursor moves upward.
-     A tied stripe unties on interaction. Bottom anchors are fixed.
+     Manga Card — Drawer Stack Interaction
+     A physical drawer containing 4 thumbnail cards. Cursor moves
+     upward to browse cards one at a time. A strap unties on open.
+     Bottom anchors are fixed. Drawer has depth: walls, lip, shadows.
      ============================================================ */
 
   .manga-item {
@@ -57,17 +58,19 @@
     outline: none;
     cursor: pointer;
     z-index: 1;
-    transition: z-index 0s 0.35s;
+    transition: z-index 0s 0.4s;
     animation: cardEnter 0.55s cubic-bezier(0.22, 1, 0.36, 1) both;
   }
 
-  .manga-item.is-revealed {
+  .manga-item.is-open {
     z-index: 30;
     transition: z-index 0s;
   }
 
-  .manga-item:focus-visible .folder-clip {
-    box-shadow: 0 0 0 2px var(--gold);
+  .manga-item:focus-visible .drawer {
+    box-shadow:
+      0 0 0 2px var(--gold),
+      0 10px 22px hsl(267 40% 3% / 0.45);
   }
 
   @keyframes cardEnter {
@@ -75,81 +78,162 @@
     to { opacity: 1; transform: translateY(0); }
   }
 
-  /* --- Clip window: fixed aspect, overflow hidden --- */
-  .folder-clip {
+  /* --- Drawer container ---
+     Physical tray with side walls, front lip, inner shadow.
+     Overflow visible so cards can pop above; inner clip hides bottoms. */
+  .drawer {
     position: relative;
     aspect-ratio: 2 / 3;
     width: 100%;
-    overflow: hidden;
-    border-radius: 9px;
-    background: var(--card-shell);
-    border: 1px solid var(--folder-card-border);
-    box-shadow: 0 10px 22px hsl(267 40% 3% / 0.45);
+    border-radius: 10px;
+    background: var(--folder-drawer);
+    border: 1px solid var(--folder-drawer-border);
+    box-shadow:
+      0 10px 22px hsl(267 40% 3% / 0.45),
+      inset 0 1px 0 hsl(0 0% 100% / 0.06);
     transition: box-shadow 0.4s ease;
   }
 
-  .manga-item.is-revealed .folder-clip {
-    box-shadow: 0 16px 30px hsl(267 40% 3% / 0.55);
+  .manga-item.is-open .drawer {
+    box-shadow:
+      0 16px 34px hsl(267 40% 3% / 0.6),
+      inset 0 1px 0 hsl(0 0% 100% / 0.06);
   }
 
-  /* --- Thumbnail layers ---
-     Each is full-size, absolutely positioned inside the clip.
-     Translated downward when idle; rise as reveal level increases. */
-  .folder-thumb {
+  /* Drawer interior — darker recess behind the cards */
+  .drawer__interior {
+    position: absolute;
+    inset: 6px 6px 0 6px;
+    border-radius: 6px 6px 0 0;
+    background: var(--folder-drawer-inner);
+    box-shadow:
+      inset 0 3px 8px hsl(267 40% 2% / 0.6),
+      inset 0 -1px 0 hsl(0 0% 100% / 0.03);
+    overflow: hidden;
+  }
+
+  /* Front lip — the visible bottom edge that clips the cards */
+  .drawer__lip {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 22%;
+    background: linear-gradient(
+      to bottom,
+      transparent 0%,
+      var(--folder-drawer-lip) 35%,
+      var(--folder-drawer) 100%
+    );
+    z-index: 25;
+    pointer-events: none;
+    border-top: 1px solid var(--folder-drawer-border);
+  }
+
+  /* Side wall highlights — subtle left/right edge depth */
+  .drawer__wall {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    width: 3px;
+    pointer-events: none;
+    z-index: 24;
+  }
+  .drawer__wall--left {
+    left: 0;
+    background: linear-gradient(
+      to right,
+      hsl(0 0% 0% / 0.25) 0%,
+      transparent 100%
+    );
+    border-radius: 10px 0 0 10px;
+  }
+  .drawer__wall--right {
+    right: 0;
+    background: linear-gradient(
+      to left,
+      hsl(0 0% 0% / 0.25) 0%,
+      transparent 100%
+    );
+    border-radius: 0 10px 10px 0;
+  }
+
+  /* --- Card layers ---
+     Each card is full-size, positioned inside the interior.
+     In idle state all cards sit low, compressed inside the drawer.
+     Only the "active" card pops up; others settle back down. */
+  .drawer-card {
     position: absolute;
     inset: 0;
-    border-radius: 7px;
+    border-radius: 6px;
     overflow: hidden;
     border: 1px solid var(--folder-card-border);
-    transition: transform 0.45s cubic-bezier(0.22, 0.85, 0.3, 1.05),
-                filter 0.4s ease;
+    transition:
+      transform 0.5s cubic-bezier(0.22, 0.85, 0.3, 1.05),
+      filter 0.4s ease,
+      box-shadow 0.4s ease;
     will-change: transform;
     backface-visibility: hidden;
   }
 
-  .folder-thumb img {
+  .drawer-card img {
     width: 100%;
     height: 100%;
     object-fit: cover;
     display: block;
   }
 
-  /* --- Idle (reveal-0): compressed, pushed down, only top of front visible --- */
-  .folder-thumb--front  { z-index: 4; transform: translateY(82%); }
-  .folder-thumb--mid    { z-index: 3; transform: translateY(86%); }
-  .folder-thumb--back   { z-index: 2; transform: translateY(90%); }
-  .folder-thumb--empty  {
-    z-index: 1;
-    transform: translateY(94%);
-    filter: blur(5px) brightness(0.35);
+  /* z-index: front card on top, blurred back card at bottom */
+  .drawer-card--1 { z-index: 5; }
+  .drawer-card--2 { z-index: 4; }
+  .drawer-card--3 { z-index: 3; }
+  .drawer-card--4 { z-index: 2; }
+
+  /* --- Idle (state-0): all cards stored, compressed low --- */
+  .drawer-card--1 { transform: translateY(20%); }
+  .drawer-card--2 { transform: translateY(24%); }
+  .drawer-card--3 { transform: translateY(28%); }
+  .drawer-card--4 {
+    transform: translateY(32%);
+    filter: blur(6px) brightness(0.3);
   }
 
-  /* --- Reveal level 1: front thumbnail rises --- */
-  .reveal-1 .folder-thumb--front { transform: translateY(30%); }
-  .reveal-1 .folder-thumb--mid   { transform: translateY(50%); }
-  .reveal-1 .folder-thumb--back  { transform: translateY(60%); }
-  .reveal-1 .folder-thumb--empty { transform: translateY(66%); }
+  /* --- State 1: drawer just opened, card 1 dominant, card 2 starts emerging --- */
+  .state-1 .drawer-card--1 { transform: translateY(8%); }
+  .state-1 .drawer-card--2 { transform: translateY(20%); }
+  .state-1 .drawer-card--3 { transform: translateY(28%); }
+  .state-1 .drawer-card--4 { transform: translateY(32%); }
 
-  /* --- Reveal level 2: front + mid visible --- */
-  .reveal-2 .folder-thumb--front { transform: translateY(15%); }
-  .reveal-2 .folder-thumb--mid   { transform: translateY(32%); }
-  .reveal-2 .folder-thumb--back  { transform: translateY(46%); }
-  .reveal-2 .folder-thumb--empty { transform: translateY(54%); }
+  /* --- State 2: card 2 pops up ~60%, card 1 lifts slightly --- */
+  .state-2 .drawer-card--1 { transform: translateY(0%); }
+  .state-2 .drawer-card--2 {
+    transform: translateY(-30%);
+    box-shadow: 0 8px 20px var(--folder-card-shadow);
+  }
+  .state-2 .drawer-card--3 { transform: translateY(24%); }
+  .state-2 .drawer-card--4 { transform: translateY(30%); }
 
-  /* --- Reveal level 3: front + mid + back visible --- */
-  .reveal-3 .folder-thumb--front { transform: translateY(5%); }
-  .reveal-3 .folder-thumb--mid   { transform: translateY(20%); }
-  .reveal-3 .folder-thumb--back  { transform: translateY(34%); }
-  .reveal-3 .folder-thumb--empty { transform: translateY(42%); }
+  /* --- State 3: card 2 settles back, card 3 pops up ~50% --- */
+  .state-3 .drawer-card--1 { transform: translateY(0%); }
+  .state-3 .drawer-card--2 { transform: translateY(20%); }
+  .state-3 .drawer-card--3 {
+    transform: translateY(-22%);
+    box-shadow: 0 8px 20px var(--folder-card-shadow);
+  }
+  .state-3 .drawer-card--4 { transform: translateY(28%); }
 
-  /* --- Reveal level 4: all layers ~60% visible --- */
-  .reveal-4 .folder-thumb--front { transform: translateY(0%); }
-  .reveal-4 .folder-thumb--mid   { transform: translateY(12%); }
-  .reveal-4 .folder-thumb--back   { transform: translateY(24%); }
-  .reveal-4 .folder-thumb--empty  { transform: translateY(33%); }
+  /* --- State 4: card 3 settles, card 4 (blurred) pops up --- */
+  .state-4 .drawer-card--1 { transform: translateY(0%); }
+  .state-4 .drawer-card--2 { transform: translateY(20%); }
+  .state-4 .drawer-card--3 { transform: translateY(24%); }
+  .state-4 .drawer-card--4 {
+    transform: translateY(-15%);
+    filter: blur(4px) brightness(0.45);
+    box-shadow: 0 8px 20px var(--folder-card-shadow);
+  }
 
-  /* --- Front card overlay + title --- */
-  .folder-thumb__overlay {
+  /* --- Card overlay + title on front card --- */
+  .drawer-card__overlay {
     position: absolute;
     inset: 0;
     background: linear-gradient(
@@ -160,7 +244,7 @@
     pointer-events: none;
   }
 
-  .folder-thumb__title {
+  .drawer-card__title {
     position: absolute;
     bottom: 0;
     left: 0;
@@ -174,117 +258,152 @@
     background: linear-gradient(to top, hsl(267 40% 3% / 0.6), transparent);
   }
 
-  /* --- Stripe/Strap ---
-     Horizontal band at ~75% (25% below midline).
-     Tied knot when idle; straightens when revealed. */
-  .folder-stripe {
+  /* --- Strap / Stripe ---
+     Single horizontal band at ~75% (25% below midline).
+     Tied knot when idle; straightens when drawer opens.
+     Has its own animation — does not simply follow cards. */
+  .drawer-strap {
     position: absolute;
-    left: -4px;
-    right: -4px;
+    left: -3px;
+    right: -3px;
     top: 75%;
-    height: 12px;
-    z-index: 15;
+    height: 11px;
+    z-index: 18;
     pointer-events: none;
-    transition: transform 0.4s cubic-bezier(0.22, 0.85, 0.3, 1.05);
+    transition:
+      transform 0.45s cubic-bezier(0.22, 0.85, 0.3, 1.05),
+      top 0.45s cubic-bezier(0.22, 0.85, 0.3, 1.05);
   }
 
-  .folder-stripe::before {
-    content: "";
+  .drawer-strap__band {
     position: absolute;
     inset: 0;
     background: var(--folder-stripe);
     border-radius: 2px;
     box-shadow: 0 1px 2px var(--folder-stripe-shadow);
-    transition: box-shadow 0.4s ease, transform 0.4s ease;
+    transition: box-shadow 0.4s ease;
   }
 
-  .folder-stripe__knot {
+  /* Tied knot — compact, folded shape */
+  .drawer-strap__knot {
     position: absolute;
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%) rotate(0deg) scale(1);
-    width: 20px;
-    height: 16px;
+    width: 18px;
+    height: 14px;
     background: var(--folder-stripe);
     border-radius: 3px;
     box-shadow:
       0 1px 3px var(--folder-stripe-shadow),
-      inset 0 1px 1px hsl(0 0% 100% / 0.12);
-    transition: transform 0.45s cubic-bezier(0.3, 0.8, 0.3, 1.3),
-                opacity 0.35s ease;
+      inset 0 1px 1px hsl(0 0% 100% / 0.15);
+    transition:
+      transform 0.5s cubic-bezier(0.3, 0.8, 0.3, 1.3),
+      opacity 0.35s ease;
   }
 
-  .folder-stripe__knot::after {
+  .drawer-strap__knot::after {
     content: "";
     position: absolute;
-    top: 2px;
+    top: 1px;
     left: 50%;
     transform: translateX(-50%);
-    width: 10px;
-    height: 5px;
-    border: 1.5px solid hsl(38 50% 70% / 0.5);
+    width: 9px;
+    height: 4px;
+    border: 1.5px solid hsl(38 50% 72% / 0.5);
     border-radius: 3px;
     border-bottom: none;
     transition: opacity 0.3s ease;
   }
 
-  /* Revealed: knot loosens, stripe straightens, shadow deepens */
-  .manga-item.is-revealed .folder-stripe::before {
+  /* Strap side exposure — small tabs visible beyond the card edges */
+  .drawer-strap__tab {
+    position: absolute;
+    top: 0;
+    width: 6px;
+    height: 100%;
+    background: var(--folder-stripe);
+    border-radius: 2px;
+    box-shadow: 0 1px 2px var(--folder-stripe-shadow);
+    transition: transform 0.4s ease, opacity 0.4s ease;
+  }
+  .drawer-strap__tab--left {
+    left: -6px;
+    transform: rotate(-8deg) translateY(-1px);
+  }
+  .drawer-strap__tab--right {
+    right: -6px;
+    transform: rotate(8deg) translateY(-1px);
+  }
+
+  /* Open state: strap straightens, knot unties, shadow deepens */
+  .manga-item.is-open .drawer-strap__band {
     box-shadow:
       0 2px 6px var(--folder-stripe-shadow),
-      0 0 0 1px hsl(0 0% 0% / 0.08);
+      0 0 0 1px hsl(0 0% 0% / 0.06);
   }
 
-  .manga-item.is-revealed .folder-stripe__knot {
-    transform: translate(-50%, -50%) rotate(40deg) scale(0.35);
-    opacity: 0.2;
+  .manga-item.is-open .drawer-strap__knot {
+    transform: translate(-50%, -50%) rotate(35deg) scale(0.3);
+    opacity: 0.15;
   }
 
-  .manga-item.is-revealed .folder-stripe__knot::after {
+  .manga-item.is-open .drawer-strap__knot::after {
     opacity: 0;
   }
 
+  .manga-item.is-open .drawer-strap__tab--left {
+    transform: rotate(-2deg) translateY(0);
+  }
+  .manga-item.is-open .drawer-strap__tab--right {
+    transform: rotate(2deg) translateY(0);
+  }
+
+  /* Strap follows the stack upward slightly as cards rise */
+  .state-2 .drawer-strap { top: 72%; }
+  .state-3 .drawer-strap { top: 73%; }
+  .state-4 .drawer-strap { top: 74%; }
+
   /* --- Fixed bottom anchors ---
-     Both bottom corners are fixed attachment points that never move. */
-  .folder-anchor {
+     Two metallic fasteners at bottom corners. Never move. */
+  .drawer-anchor {
     position: absolute;
-    width: 14px;
-    height: 14px;
+    width: 12px;
+    height: 12px;
     border-radius: 50%;
-    z-index: 20;
+    z-index: 22;
     pointer-events: none;
     background: radial-gradient(
       circle at 35% 30%,
       var(--folder-fastener-highlight) 0%,
       var(--folder-fastener) 55%,
-      hsl(267 20% 16%) 100%
+      hsl(267 20% 14%) 100%
     );
     box-shadow:
       0 1px 2px hsl(267 40% 2% / 0.6),
       inset 0 1px 1px hsl(0 0% 100% / 0.15);
   }
 
-  .folder-anchor::after {
+  .drawer-anchor::after {
     content: "";
     position: absolute;
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
-    width: 5px;
-    height: 5px;
+    width: 4px;
+    height: 4px;
     border-radius: 50%;
     background: hsl(267 40% 5% / 0.8);
     box-shadow: inset 0 1px 1px hsl(0 0% 0% / 0.5);
   }
 
-  .folder-anchor--left {
-    bottom: -5px;
-    left: 10px;
+  .drawer-anchor--left {
+    bottom: 4px;
+    left: 8px;
   }
-
-  .folder-anchor--right {
-    bottom: -5px;
-    right: 10px;
+  .drawer-anchor--right {
+    bottom: 4px;
+    right: 8px;
   }
 
   /* --- Metadata below the card --- */
@@ -308,24 +427,12 @@
   }
 
   /* --- Named cover gradients --- */
-  .cover-moss {
-    background: linear-gradient(150deg, #183c39 0%, #6c795b 55%, #d5ac6b 100%);
-  }
-  .cover-cobalt {
-    background: linear-gradient(150deg, #1a275e 0%, #344fa2 48%, #de8f6e 100%);
-  }
-  .cover-moon {
-    background: linear-gradient(150deg, #314a78 0%, #596e99 42%, #d99b78 100%);
-  }
-  .cover-ember {
-    background: linear-gradient(150deg, #d06e52 5%, #8e294b 55%, #33254e 100%);
-  }
-  .cover-coral {
-    background: linear-gradient(150deg, #de746a 0%, #f0bd8c 48%, #5e526d 100%);
-  }
-  .cover-ink {
-    background: linear-gradient(150deg, #202033 0%, #4a4766 53%, #b86a56 100%);
-  }
+  .cover-moss { background: linear-gradient(150deg, #183c39 0%, #6c795b 55%, #d5ac6b 100%); }
+  .cover-cobalt { background: linear-gradient(150deg, #1a275e 0%, #344fa2 48%, #de8f6e 100%); }
+  .cover-moon { background: linear-gradient(150deg, #314a78 0%, #596e99 42%, #d99b78 100%); }
+  .cover-ember { background: linear-gradient(150deg, #d06e52 5%, #8e294b 55%, #33254e 100%); }
+  .cover-coral { background: linear-gradient(150deg, #de746a 0%, #f0bd8c 48%, #5e526d 100%); }
+  .cover-ink { background: linear-gradient(150deg, #202033 0%, #4a4766 53%, #b86a56 100%); }
 
   /* --- Category navigation --- */
   .nav-tab {
@@ -339,12 +446,7 @@
     white-space: nowrap;
     border: 1px solid transparent;
   }
-
-  .nav-tab:hover {
-    color: var(--text);
-    background: var(--bg-raised);
-  }
-
+  .nav-tab:hover { color: var(--text); background: var(--bg-raised); }
   .nav-tab.active {
     color: var(--gold);
     background: var(--card-shell);
@@ -360,41 +462,38 @@
     transition: color 0.2s;
     white-space: nowrap;
   }
-  .header-link:hover {
-    color: var(--text);
-  }
-  .header-link.active {
-    color: var(--gold);
-  }
+  .header-link:hover { color: var(--text); }
+  .header-link.active { color: var(--gold); }
 }
 
 /* --- Reduced motion --- */
 @media (prefers-reduced-motion: reduce) {
-  .folder-thumb,
-  .folder-stripe,
-  .folder-stripe__knot,
-  .folder-clip,
+  .drawer-card,
+  .drawer-strap,
+  .drawer-strap__knot,
+  .drawer-strap__tab,
+  .drawer,
   .manga-item {
     transition-duration: 0.01ms !important;
     animation: none !important;
   }
 
-  .manga-item.reveal-1 .folder-thumb--front,
-  .manga-item.reveal-1 .folder-thumb--mid,
-  .manga-item.reveal-1 .folder-thumb--back,
-  .manga-item.reveal-1 .folder-thumb--empty,
-  .manga-item.reveal-2 .folder-thumb--front,
-  .manga-item.reveal-2 .folder-thumb--mid,
-  .manga-item.reveal-2 .folder-thumb--back,
-  .manga-item.reveal-2 .folder-thumb--empty,
-  .manga-item.reveal-3 .folder-thumb--front,
-  .manga-item.reveal-3 .folder-thumb--mid,
-  .manga-item.reveal-3 .folder-thumb--back,
-  .manga-item.reveal-3 .folder-thumb--empty,
-  .manga-item.reveal-4 .folder-thumb--front,
-  .manga-item.reveal-4 .folder-thumb--mid,
-  .manga-item.reveal-4 .folder-thumb--back,
-  .manga-item.reveal-4 .folder-thumb--empty {
+  .manga-item.state-1 .drawer-card--1,
+  .manga-item.state-1 .drawer-card--2,
+  .manga-item.state-1 .drawer-card--3,
+  .manga-item.state-1 .drawer-card--4,
+  .manga-item.state-2 .drawer-card--1,
+  .manga-item.state-2 .drawer-card--2,
+  .manga-item.state-2 .drawer-card--3,
+  .manga-item.state-2 .drawer-card--4,
+  .manga-item.state-3 .drawer-card--1,
+  .manga-item.state-3 .drawer-card--2,
+  .manga-item.state-3 .drawer-card--3,
+  .manga-item.state-3 .drawer-card--4,
+  .manga-item.state-4 .drawer-card--1,
+  .manga-item.state-4 .drawer-card--2,
+  .manga-item.state-4 .drawer-card--3,
+  .manga-item.state-4 .drawer-card--4 {
     transform: none !important;
     filter: none !important;
   }
