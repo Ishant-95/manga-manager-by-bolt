@@ -1,0 +1,376 @@
+@import url("https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=DM+Sans:wght@400;500;700&family=DM+Mono:wght@400;500&display=swap");
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --bg: hsl(267, 30%, 9%);
+    --bg-raised: hsl(267, 26%, 13%);
+    --card-shell: hsl(267, 20%, 16%);
+    --border: hsl(267, 18%, 24%);
+    --text: hsl(39, 40%, 94%);
+    --text-soft: hsl(39, 18%, 72%);
+    --text-faint: hsl(265, 10%, 56%);
+    --gold: hsl(38, 76%, 58%);
+    --rose: hsl(344, 55%, 62%);
+    --font-display: "Fraunces", Georgia, serif;
+    --font-body: "DM Sans", -apple-system, sans-serif;
+    --font-mono: "DM Mono", "SFMono-Regular", Consolas, monospace;
+  }
+
+  body {
+    background:
+      radial-gradient(circle at 18% -10%, hsl(267 35% 16% / 0.6), transparent 45rem),
+      var(--bg);
+    color: var(--text);
+    font-family: var(--font-body);
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .font-display {
+    font-family: var(--font-display);
+  }
+
+  .font-mono {
+    font-family: var(--font-mono);
+  }
+}
+
+@layer components {
+  /* ============================================================
+     Manga Card — Four-Layer Fan Stack with Pin Mechanism
+     ============================================================ */
+
+  .manga-item {
+    position: relative;
+    outline: none;
+    cursor: pointer;
+    z-index: 1;
+    transition: z-index 0s 0.3s;
+    animation: cardEnter 0.55s cubic-bezier(0.22, 1, 0.36, 1) both;
+  }
+
+  .manga-item:hover,
+  .manga-item.is-active {
+    z-index: 30;
+    transition: z-index 0s;
+  }
+
+  .manga-item:focus-visible .fan-stack {
+    box-shadow: 0 0 0 2px var(--gold);
+    border-radius: 10px;
+  }
+
+  @keyframes cardEnter {
+    from {
+      opacity: 0;
+      transform: translateY(18px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  /* The stack area — fixed aspect, overflow visible for fan */
+  .fan-stack {
+    position: relative;
+    aspect-ratio: 2 / 3;
+    width: 100%;
+    transition: transform 0.4s cubic-bezier(0.22, 1, 0.36, 1);
+  }
+
+  .manga-item:hover .fan-stack,
+  .manga-item.is-active .fan-stack {
+    transform: translateY(-3px);
+  }
+
+  /* --- Card layers --- */
+  .fan-card {
+    position: absolute;
+    inset: 0;
+    border-radius: 9px;
+    border: 1px solid hsl(0 0% 100% / 0.09);
+    box-shadow: 0 10px 22px hsl(267 40% 3% / 0.45);
+    transform-origin: 100% 0%;
+    transition:
+      transform 0.38s cubic-bezier(0.22, 0.85, 0.3, 1.05),
+      box-shadow 0.38s ease,
+      filter 0.38s ease,
+      opacity 0.38s ease;
+    display: flex;
+    align-items: flex-end;
+    overflow: hidden;
+    will-change: transform;
+    backface-visibility: hidden;
+  }
+
+  .fan-card img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+  }
+
+  /* --- Idle stack: neat, compact, physical --- */
+  .fan-card--rear-3 {
+    z-index: 0;
+    transform: translate(9px, 7px) rotate(3.6deg);
+    filter: blur(2px) brightness(0.5);
+    opacity: 0.5;
+  }
+  .fan-card--rear-2 {
+    z-index: 1;
+    transform: translate(5px, 5px) rotate(2.5deg);
+    filter: brightness(0.72);
+  }
+  .fan-card--rear-1 {
+    z-index: 2;
+    transform: translate(2.5px, 2.5px) rotate(1.2deg);
+    filter: brightness(0.86);
+  }
+  .fan-card--front {
+    z-index: 3;
+    transform: translate(0, 0) rotate(0deg);
+  }
+
+  /* --- Hover/active: diagonal fan --- */
+  .manga-item:hover .fan-card,
+  .manga-item.is-active .fan-card {
+    box-shadow: 0 16px 30px hsl(267 40% 3% / 0.55);
+  }
+
+  .manga-item:hover .fan-card--front,
+  .manga-item.is-active .fan-card--front {
+    transform: translate(-48px, 60px) rotate(-18deg);
+  }
+  .manga-item:hover .fan-card--rear-1,
+  .manga-item.is-active .fan-card--rear-1 {
+    transform: translate(-24px, 30px) rotate(-9deg);
+    filter: brightness(0.92);
+  }
+  .manga-item:hover .fan-card--rear-2,
+  .manga-item.is-active .fan-card--rear-2 {
+    transform: translate(6px, 3px) rotate(2deg);
+    filter: brightness(0.8);
+  }
+  .manga-item:hover .fan-card--rear-3,
+  .manga-item.is-active .fan-card--rear-3 {
+    transform: translate(20px, 15px) rotate(4.5deg);
+    filter: blur(1.5px) brightness(0.85);
+    opacity: 0.92;
+    transition-duration: 0.5s;
+    transition-delay: 0.03s;
+  }
+
+  /* --- Card spine + title on front card --- */
+  .fan-card__spine {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 5px;
+    background: hsl(0 0% 100% / 0.14);
+  }
+
+  .fan-card__overlay {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(
+      to top,
+      hsl(267 40% 3% / 0.65) 0%,
+      transparent 50%
+    );
+    pointer-events: none;
+  }
+
+  .fan-card__title {
+    position: relative;
+    z-index: 1;
+    padding: 10px 10px 12px;
+    font-family: var(--font-mono);
+    font-size: 10px;
+    letter-spacing: 0.03em;
+    color: hsl(39 40% 95% / 0.92);
+    text-shadow: 0 1px 3px hsl(267 40% 3% / 0.6);
+    width: 100%;
+    background: linear-gradient(to top, hsl(267 40% 3% / 0.55), transparent);
+  }
+
+  /* --- Metallic Pins --- */
+  .pin {
+    position: absolute;
+    width: 15px;
+    height: 15px;
+    z-index: 6;
+    pointer-events: none;
+    transition:
+      transform 0.32s cubic-bezier(0.3, 0.8, 0.3, 1.3),
+      opacity 0.28s ease;
+  }
+  .pin::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: 50%;
+    background: var(--bg);
+    box-shadow:
+      inset 0 2px 3px hsl(267 40% 2% / 0.9),
+      inset 0 -1px 1px hsl(0 0% 100% / 0.05);
+  }
+  .pin::after {
+    content: "";
+    position: absolute;
+    inset: 3px;
+    border-radius: 50%;
+    background: radial-gradient(
+      circle at 35% 30%,
+      hsl(38 45% 80%) 0%,
+      hsl(38 30% 48%) 55%,
+      hsl(267 20% 16%) 100%
+    );
+    box-shadow: 0 1px 2px hsl(267 40% 2% / 0.6);
+  }
+
+  .pin--tl {
+    top: 7px;
+    left: 7px;
+  }
+  .pin--br {
+    bottom: 7px;
+    right: 7px;
+  }
+
+  .manga-item:hover .pin--tl,
+  .manga-item.is-active .pin--tl {
+    transform: translate(-6px, -7px) rotate(-16deg) scale(0.85);
+    opacity: 0;
+  }
+
+  /* --- Metadata below the card --- */
+  .fan-meta {
+    margin-top: 14px;
+    padding-right: 6px;
+  }
+  .fan-meta h3 {
+    font-family: var(--font-display);
+    font-weight: 500;
+    font-size: 15px;
+    margin: 0 0 4px;
+    color: var(--text);
+    line-height: 1.25;
+  }
+  .fan-meta .fan-tag {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    letter-spacing: 0.04em;
+    color: var(--text-faint);
+  }
+
+  /* --- Named cover gradients --- */
+  .cover-moss {
+    background: linear-gradient(150deg, #183c39 0%, #6c795b 55%, #d5ac6b 100%);
+  }
+  .cover-cobalt {
+    background: linear-gradient(150deg, #1a275e 0%, #344fa2 48%, #de8f6e 100%);
+  }
+  .cover-moon {
+    background: linear-gradient(150deg, #314a78 0%, #596e99 42%, #d99b78 100%);
+  }
+  .cover-ember {
+    background: linear-gradient(150deg, #d06e52 5%, #8e294b 55%, #33254e 100%);
+  }
+  .cover-coral {
+    background: linear-gradient(150deg, #de746a 0%, #f0bd8c 48%, #5e526d 100%);
+  }
+  .cover-ink {
+    background: linear-gradient(150deg, #202033 0%, #4a4766 53%, #b86a56 100%);
+  }
+  .cover-peacock {
+    background:
+      radial-gradient(
+        circle at 72% 28%,
+        hsl(45 75% 62% / 0.85) 0%,
+        hsl(45 75% 62% / 0) 32%
+      ),
+      linear-gradient(
+        160deg,
+        #0b3d3a 0%,
+        #146b5e 35%,
+        #1f8a70 58%,
+        #2c5f8a 78%,
+        #232a5e 100%
+      );
+  }
+
+  /* --- Category navigation --- */
+  .nav-tab {
+    position: relative;
+    padding: 0.5rem 0.875rem;
+    border-radius: 0.5rem;
+    font-size: 0.8125rem;
+    font-weight: 500;
+    color: var(--text-soft);
+    transition: color 0.2s, background-color 0.2s;
+    white-space: nowrap;
+    border: 1px solid transparent;
+  }
+
+  .nav-tab:hover {
+    color: var(--text);
+    background: var(--bg-raised);
+  }
+
+  .nav-tab.active {
+    color: var(--gold);
+    background: var(--card-shell);
+    border-color: var(--border);
+  }
+
+  /* --- Header nav links --- */
+  .header-link {
+    padding: 0.375rem 0.75rem;
+    font-size: 0.8125rem;
+    font-weight: 500;
+    color: var(--text-soft);
+    transition: color 0.2s;
+    white-space: nowrap;
+  }
+  .header-link:hover {
+    color: var(--text);
+  }
+  .header-link.active {
+    color: var(--gold);
+  }
+}
+
+/* --- Reduced motion --- */
+@media (prefers-reduced-motion: reduce) {
+  .fan-card,
+  .fan-stack,
+  .pin,
+  .manga-item {
+    transition-duration: 0.01ms !important;
+    animation: none !important;
+  }
+
+  .manga-item:hover .fan-card--front,
+  .manga-item.is-active .fan-card--front,
+  .manga-item:hover .fan-card--rear-1,
+  .manga-item.is-active .fan-card--rear-1,
+  .manga-item:hover .fan-card--rear-2,
+  .manga-item.is-active .fan-card--rear-2,
+  .manga-item:hover .fan-card--rear-3,
+  .manga-item.is-active .fan-card--rear-3,
+  .manga-item:hover .pin--tl,
+  .manga-item.is-active .pin--tl,
+  .manga-item:hover .fan-stack,
+  .manga-item.is-active .fan-stack {
+    transform: none !important;
+    filter: none !important;
+    opacity: 1 !important;
+  }
+}
