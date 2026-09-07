@@ -18,6 +18,12 @@
     --font-display: "Fraunces", Georgia, serif;
     --font-body: "DM Sans", -apple-system, sans-serif;
     --font-mono: "DM Mono", "SFMono-Regular", Consolas, monospace;
+
+    --folder-stripe: hsl(38, 60%, 52%);
+    --folder-stripe-shadow: hsl(267 40% 3% / 0.4);
+    --folder-fastener: hsl(38, 35%, 50%);
+    --folder-fastener-highlight: hsl(38, 50%, 78%);
+    --folder-card-border: hsl(0 0% 100% / 0.09);
   }
 
   body {
@@ -41,9 +47,9 @@
 
 @layer components {
   /* ============================================================
-     Manga Card — Three-Card Fan Stack with Pin Mechanism
-     Cards rotate around the bottom-right fixed pivot.
-     Top-left pin releases on hover; bottom-right pin stays fixed.
+     Manga Card — Folder Stack Interaction
+     4 thumbnail layers rise progressively as cursor moves upward.
+     A tied stripe unties on interaction. Bottom anchors are fixed.
      ============================================================ */
 
   .manga-item {
@@ -51,209 +57,234 @@
     outline: none;
     cursor: pointer;
     z-index: 1;
-    transition: z-index 0s 0.3s;
+    transition: z-index 0s 0.35s;
     animation: cardEnter 0.55s cubic-bezier(0.22, 1, 0.36, 1) both;
   }
 
-  .manga-item:hover,
-  .manga-item.is-active {
+  .manga-item.is-revealed {
     z-index: 30;
     transition: z-index 0s;
   }
 
-  .manga-item:focus-visible .fan-stack {
+  .manga-item:focus-visible .folder-clip {
     box-shadow: 0 0 0 2px var(--gold);
-    border-radius: 10px;
   }
 
   @keyframes cardEnter {
-    from {
-      opacity: 0;
-      transform: translateY(18px);
-    }
-    to {
-      opacity: 1;
-      transform: translateY(0);
-    }
+    from { opacity: 0; transform: translateY(18px); }
+    to { opacity: 1; transform: translateY(0); }
   }
 
-  /* The stack area — fixed aspect, overflow visible for fan */
-  .fan-stack {
+  /* --- Clip window: fixed aspect, overflow hidden --- */
+  .folder-clip {
     position: relative;
     aspect-ratio: 2 / 3;
     width: 100%;
-    transition: transform 0.4s cubic-bezier(0.22, 1, 0.36, 1);
+    overflow: hidden;
+    border-radius: 9px;
+    background: var(--card-shell);
+    border: 1px solid var(--folder-card-border);
+    box-shadow: 0 10px 22px hsl(267 40% 3% / 0.45);
+    transition: box-shadow 0.4s ease;
   }
 
-  .manga-item:hover .fan-stack,
-  .manga-item.is-active .fan-stack {
-    transform: translateY(-3px);
+  .manga-item.is-revealed .folder-clip {
+    box-shadow: 0 16px 30px hsl(267 40% 3% / 0.55);
   }
 
-  /* --- Card layers ---
-     transform-origin at bottom-right (100% 100%) so all cards
-     rotate around the fixed pivot point. */
-  .fan-card {
+  /* --- Thumbnail layers ---
+     Each is full-size, absolutely positioned inside the clip.
+     Translated downward when idle; rise as reveal level increases. */
+  .folder-thumb {
     position: absolute;
     inset: 0;
-    border-radius: 9px;
-    border: 1px solid hsl(0 0% 100% / 0.09);
-    box-shadow: 0 10px 22px hsl(267 40% 3% / 0.45);
-    transform-origin: 100% 100%;
-    transition:
-      transform 0.42s cubic-bezier(0.22, 0.85, 0.3, 1.05),
-      box-shadow 0.38s ease,
-      filter 0.38s ease;
-    display: flex;
-    align-items: flex-end;
+    border-radius: 7px;
     overflow: hidden;
+    border: 1px solid var(--folder-card-border);
+    transition: transform 0.45s cubic-bezier(0.22, 0.85, 0.3, 1.05),
+                filter 0.4s ease;
     will-change: transform;
     backface-visibility: hidden;
   }
 
-  .fan-card img {
+  .folder-thumb img {
     width: 100%;
     height: 100%;
     object-fit: cover;
     display: block;
   }
 
-  /* --- Idle stack: neat, compact, front card dominates --- */
-  .fan-card--rear {
+  /* --- Idle (reveal-0): compressed, pushed down, only top of front visible --- */
+  .folder-thumb--front  { z-index: 4; transform: translateY(82%); }
+  .folder-thumb--mid    { z-index: 3; transform: translateY(86%); }
+  .folder-thumb--back   { z-index: 2; transform: translateY(90%); }
+  .folder-thumb--empty  {
     z-index: 1;
-    transform: translate(-5px, 5px) rotate(2deg);
-    filter: brightness(0.82);
+    transform: translateY(94%);
+    filter: blur(5px) brightness(0.35);
   }
 
-  .fan-card--middle {
-    z-index: 2;
-    transform: translate(-2.5px, 2.5px) rotate(1deg);
-    filter: brightness(0.91);
-  }
+  /* --- Reveal level 1: front thumbnail rises --- */
+  .reveal-1 .folder-thumb--front { transform: translateY(30%); }
+  .reveal-1 .folder-thumb--mid   { transform: translateY(50%); }
+  .reveal-1 .folder-thumb--back  { transform: translateY(60%); }
+  .reveal-1 .folder-thumb--empty { transform: translateY(66%); }
 
-  .fan-card--front {
-    z-index: 3;
-    transform: translate(0, 0) rotate(0deg);
-  }
+  /* --- Reveal level 2: front + mid visible --- */
+  .reveal-2 .folder-thumb--front { transform: translateY(15%); }
+  .reveal-2 .folder-thumb--mid   { transform: translateY(32%); }
+  .reveal-2 .folder-thumb--back  { transform: translateY(46%); }
+  .reveal-2 .folder-thumb--empty { transform: translateY(54%); }
 
-  /* --- Hover/active: diagonal fan around bottom-right pivot ---
-     Rear card rotates most (swings furthest up-left),
-     middle card rotates medium,
-     front card barely rotates (stays dominant).
-     Progressive transition delays so rear moves first. */
-  .manga-item:hover .fan-card,
-  .manga-item.is-active .fan-card {
-    box-shadow: 0 16px 30px hsl(267 40% 3% / 0.55);
-  }
+  /* --- Reveal level 3: front + mid + back visible --- */
+  .reveal-3 .folder-thumb--front { transform: translateY(5%); }
+  .reveal-3 .folder-thumb--mid   { transform: translateY(20%); }
+  .reveal-3 .folder-thumb--back  { transform: translateY(34%); }
+  .reveal-3 .folder-thumb--empty { transform: translateY(42%); }
 
-  .manga-item:hover .fan-card--rear,
-  .manga-item.is-active .fan-card--rear {
-    transform: translate(0, 0) rotate(-24deg);
-    filter: brightness(0.88);
-    transition-delay: 0ms;
-  }
+  /* --- Reveal level 4: all layers ~60% visible --- */
+  .reveal-4 .folder-thumb--front { transform: translateY(0%); }
+  .reveal-4 .folder-thumb--mid   { transform: translateY(12%); }
+  .reveal-4 .folder-thumb--back   { transform: translateY(24%); }
+  .reveal-4 .folder-thumb--empty  { transform: translateY(33%); }
 
-  .manga-item:hover .fan-card--middle,
-  .manga-item.is-active .fan-card--middle {
-    transform: translate(0, 0) rotate(-12deg);
-    filter: brightness(0.94);
-    transition-delay: 50ms;
-  }
-
-  .manga-item:hover .fan-card--front,
-  .manga-item.is-active .fan-card--front {
-    transform: translate(0, 0) rotate(-3deg);
-    transition-delay: 100ms;
-  }
-
-  /* --- Card spine + title on front card --- */
-  .fan-card__spine {
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    height: 5px;
-    background: hsl(0 0% 100% / 0.14);
-  }
-
-  .fan-card__overlay {
+  /* --- Front card overlay + title --- */
+  .folder-thumb__overlay {
     position: absolute;
     inset: 0;
     background: linear-gradient(
       to top,
-      hsl(267 40% 3% / 0.65) 0%,
-      transparent 50%
+      hsl(267 40% 3% / 0.7) 0%,
+      transparent 45%
     );
     pointer-events: none;
   }
 
-  .fan-card__title {
-    position: relative;
-    z-index: 1;
-    padding: 10px 10px 12px;
+  .folder-thumb__title {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    padding: 8px 10px 10px;
     font-family: var(--font-mono);
     font-size: 10px;
     letter-spacing: 0.03em;
     color: hsl(39 40% 95% / 0.92);
     text-shadow: 0 1px 3px hsl(267 40% 3% / 0.6);
-    width: 100%;
-    background: linear-gradient(to top, hsl(267 40% 3% / 0.55), transparent);
+    background: linear-gradient(to top, hsl(267 40% 3% / 0.6), transparent);
   }
 
-  /* --- Metallic Pins ---
-     Circular punched-hole-and-rivet fasteners.
-     Top-left pin releases on hover; bottom-right pin is the
-     fixed pivot and never animates. */
-  .pin {
+  /* --- Stripe/Strap ---
+     Horizontal band at ~75% (25% below midline).
+     Tied knot when idle; straightens when revealed. */
+  .folder-stripe {
     position: absolute;
-    width: 16px;
-    height: 16px;
-    z-index: 10;
+    left: -4px;
+    right: -4px;
+    top: 75%;
+    height: 12px;
+    z-index: 15;
     pointer-events: none;
-    transition:
-      transform 0.38s cubic-bezier(0.3, 0.8, 0.3, 1.2),
-      opacity 0.32s ease;
+    transition: transform 0.4s cubic-bezier(0.22, 0.85, 0.3, 1.05);
   }
-  .pin::before {
+
+  .folder-stripe::before {
     content: "";
     position: absolute;
     inset: 0;
-    border-radius: 50%;
-    background: var(--bg);
-    box-shadow:
-      inset 0 2px 3px hsl(267 40% 2% / 0.9),
-      inset 0 -1px 1px hsl(0 0% 100% / 0.05);
+    background: var(--folder-stripe);
+    border-radius: 2px;
+    box-shadow: 0 1px 2px var(--folder-stripe-shadow);
+    transition: box-shadow 0.4s ease, transform 0.4s ease;
   }
-  .pin::after {
+
+  .folder-stripe__knot {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%) rotate(0deg) scale(1);
+    width: 20px;
+    height: 16px;
+    background: var(--folder-stripe);
+    border-radius: 3px;
+    box-shadow:
+      0 1px 3px var(--folder-stripe-shadow),
+      inset 0 1px 1px hsl(0 0% 100% / 0.12);
+    transition: transform 0.45s cubic-bezier(0.3, 0.8, 0.3, 1.3),
+                opacity 0.35s ease;
+  }
+
+  .folder-stripe__knot::after {
     content: "";
     position: absolute;
-    inset: 3px;
+    top: 2px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 10px;
+    height: 5px;
+    border: 1.5px solid hsl(38 50% 70% / 0.5);
+    border-radius: 3px;
+    border-bottom: none;
+    transition: opacity 0.3s ease;
+  }
+
+  /* Revealed: knot loosens, stripe straightens, shadow deepens */
+  .manga-item.is-revealed .folder-stripe::before {
+    box-shadow:
+      0 2px 6px var(--folder-stripe-shadow),
+      0 0 0 1px hsl(0 0% 0% / 0.08);
+  }
+
+  .manga-item.is-revealed .folder-stripe__knot {
+    transform: translate(-50%, -50%) rotate(40deg) scale(0.35);
+    opacity: 0.2;
+  }
+
+  .manga-item.is-revealed .folder-stripe__knot::after {
+    opacity: 0;
+  }
+
+  /* --- Fixed bottom anchors ---
+     Both bottom corners are fixed attachment points that never move. */
+  .folder-anchor {
+    position: absolute;
+    width: 14px;
+    height: 14px;
     border-radius: 50%;
+    z-index: 20;
+    pointer-events: none;
     background: radial-gradient(
       circle at 35% 30%,
-      hsl(38 45% 80%) 0%,
-      hsl(38 30% 48%) 55%,
+      var(--folder-fastener-highlight) 0%,
+      var(--folder-fastener) 55%,
       hsl(267 20% 16%) 100%
     );
-    box-shadow: 0 1px 2px hsl(267 40% 2% / 0.6);
+    box-shadow:
+      0 1px 2px hsl(267 40% 2% / 0.6),
+      inset 0 1px 1px hsl(0 0% 100% / 0.15);
   }
 
-  /* Top-left pin: sits at the corner, releases on hover */
-  .pin--tl {
-    top: 6px;
-    left: 6px;
+  .folder-anchor::after {
+    content: "";
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 5px;
+    height: 5px;
+    border-radius: 50%;
+    background: hsl(267 40% 5% / 0.8);
+    box-shadow: inset 0 1px 1px hsl(0 0% 0% / 0.5);
   }
 
-  /* Bottom-right pin: fixed pivot — never moves */
-  .pin--br {
-    bottom: 6px;
-    right: 6px;
+  .folder-anchor--left {
+    bottom: -5px;
+    left: 10px;
   }
 
-  .manga-item:hover .pin--tl,
-  .manga-item.is-active .pin--tl {
-    transform: translate(-7px, -7px) rotate(-14deg);
-    opacity: 0.25;
+  .folder-anchor--right {
+    bottom: -5px;
+    right: 10px;
   }
 
   /* --- Metadata below the card --- */
@@ -339,24 +370,31 @@
 
 /* --- Reduced motion --- */
 @media (prefers-reduced-motion: reduce) {
-  .fan-card,
-  .fan-stack,
-  .pin,
+  .folder-thumb,
+  .folder-stripe,
+  .folder-stripe__knot,
+  .folder-clip,
   .manga-item {
     transition-duration: 0.01ms !important;
     animation: none !important;
   }
 
-  .manga-item:hover .fan-card--front,
-  .manga-item.is-active .fan-card--front,
-  .manga-item:hover .fan-card--middle,
-  .manga-item.is-active .fan-card--middle,
-  .manga-item:hover .fan-card--rear,
-  .manga-item.is-active .fan-card--rear,
-  .manga-item:hover .pin--tl,
-  .manga-item.is-active .pin--tl,
-  .manga-item:hover .fan-stack,
-  .manga-item.is-active .fan-stack {
+  .manga-item.reveal-1 .folder-thumb--front,
+  .manga-item.reveal-1 .folder-thumb--mid,
+  .manga-item.reveal-1 .folder-thumb--back,
+  .manga-item.reveal-1 .folder-thumb--empty,
+  .manga-item.reveal-2 .folder-thumb--front,
+  .manga-item.reveal-2 .folder-thumb--mid,
+  .manga-item.reveal-2 .folder-thumb--back,
+  .manga-item.reveal-2 .folder-thumb--empty,
+  .manga-item.reveal-3 .folder-thumb--front,
+  .manga-item.reveal-3 .folder-thumb--mid,
+  .manga-item.reveal-3 .folder-thumb--back,
+  .manga-item.reveal-3 .folder-thumb--empty,
+  .manga-item.reveal-4 .folder-thumb--front,
+  .manga-item.reveal-4 .folder-thumb--mid,
+  .manga-item.reveal-4 .folder-thumb--back,
+  .manga-item.reveal-4 .folder-thumb--empty {
     transform: none !important;
     filter: none !important;
   }

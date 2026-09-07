@@ -21,9 +21,11 @@ export interface Manga {
   cover: string;
   secondaryCover: string;
   tertiaryCover: string;
+  fourthCover: string;
   coverGradient: CoverGradient;
   rear1Gradient: CoverGradient;
   rear2Gradient: CoverGradient;
+  rear3Gradient: CoverGradient;
   genres: string[];
   status: MangaStatus;
   rating: number;
@@ -41,9 +43,12 @@ export const mangaList: Manga[] = [
       "https://images.pexels.com/photos/34622355/pexels-photo-34622355.jpeg?auto=compress&cs=tinysrgb&h=650&w=940",
     tertiaryCover:
       "https://images.pexels.com/photos/29433729/pexels-photo-29433729.png?auto=compress&cs=tinysrgb&h=650&w=940",
+    fourthCover:
+      "https://images.pexels.com/photos/12695346/pexels-photo-12695346.jpeg?auto=compress&cs=tinysrgb&h=650&w=940",
     coverGradient: "cover-moss",
     rear1Gradient: "cover-coral",
     rear2Gradient: "cover-ink",
+    rear3Gradient: "cover-moon",
     genres: ["Action", "Dark Fantasy"],
     status: "Ongoing",
     rating: 4.7,
@@ -59,9 +64,12 @@ export const mangaList: Manga[] = [
       "https://images.pexels.com/photos/20584069/pexels-photo-20584069.jpeg?auto=compress&cs=tinysrgb&h=650&w=940",
     tertiaryCover:
       "https://images.pexels.com/photos/8108553/pexels-photo-8108553.jpeg?auto=compress&cs=tinysrgb&h=650&w=940",
+    fourthCover:
+      "https://images.pexels.com/photos/36390527/pexels-photo-36390527.jpeg?auto=compress&cs=tinysrgb&h=650&w=940",
     coverGradient: "cover-cobalt",
     rear1Gradient: "cover-moss",
     rear2Gradient: "cover-moon",
+    rear3Gradient: "cover-ember",
     genres: ["Sci-Fi", "Drama"],
     status: "Ongoing",
     rating: 4.5,
@@ -77,9 +85,12 @@ export const mangaList: Manga[] = [
       "https://images.pexels.com/photos/21316136/pexels-photo-21316136.jpeg?auto=compress&cs=tinysrgb&h=650&w=940",
     tertiaryCover:
       "https://images.pexels.com/photos/8108305/pexels-photo-8108305.jpeg?auto=compress&cs=tinysrgb&h=650&w=940",
+    fourthCover:
+      "https://images.pexels.com/photos/33219320/pexels-photo-33219320.jpeg?auto=compress&cs=tinysrgb&h=650&w=940",
     coverGradient: "cover-ink",
     rear1Gradient: "cover-ember",
     rear2Gradient: "cover-cobalt",
+    rear3Gradient: "cover-coral",
     genres: ["Mystery", "Supernatural"],
     status: "Completed",
     rating: 4.9,
@@ -95,9 +106,12 @@ export const mangaList: Manga[] = [
       "https://images.pexels.com/photos/8671511/pexels-photo-8671511.jpeg?auto=compress&cs=tinysrgb&h=650&w=940",
     tertiaryCover:
       "https://images.pexels.com/photos/8108429/pexels-photo-8108429.jpeg?auto=compress&cs=tinysrgb&h=650&w=940",
+    fourthCover:
+      "https://images.pexels.com/photos/31084798/pexels-photo-31084798.jpeg?auto=compress&cs=tinysrgb&h=650&w=940",
     coverGradient: "cover-ember",
     rear1Gradient: "cover-ink",
     rear2Gradient: "cover-coral",
+    rear3Gradient: "cover-moss",
     genres: ["Adventure", "Comedy"],
     status: "Ongoing",
     rating: 4.2,
@@ -113,9 +127,12 @@ export const mangaList: Manga[] = [
       "https://images.pexels.com/photos/17589611/pexels-photo-17589611.jpeg?auto=compress&cs=tinysrgb&h=650&w=940",
     tertiaryCover:
       "https://images.pexels.com/photos/8107856/pexels-photo-8107856.jpeg?auto=compress&cs=tinysrgb&h=650&w=940",
+    fourthCover:
+      "https://images.pexels.com/photos/17513315/pexels-photo-17513315.jpeg?auto=compress&cs=tinysrgb&h=650&w=940",
     coverGradient: "cover-coral",
     rear1Gradient: "cover-moon",
     rear2Gradient: "cover-ember",
+    rear3Gradient: "cover-ink",
     genres: ["Slice of Life", "Music"],
     status: "Hiatus",
     rating: 4.3,
@@ -131,9 +148,12 @@ export const mangaList: Manga[] = [
       "https://images.pexels.com/photos/2505314/pexels-photo-2505314.jpeg?auto=compress&cs=tinysrgb&h=650&w=940",
     tertiaryCover:
       "https://images.pexels.com/photos/8108415/pexels-photo-8108415.jpeg?auto=compress&cs=tinysrgb&h=650&w=940",
+    fourthCover:
+      "https://images.pexels.com/photos/20172106/pexels-photo-20172106.png?auto=compress&cs=tinysrgb&h=650&w=940",
     coverGradient: "cover-moon",
     rear1Gradient: "cover-cobalt",
     rear2Gradient: "cover-moss",
+    rear3Gradient: "cover-coral",
     genres: ["Romance", "Drama"],
     status: "Ongoing",
     rating: 4.6,
@@ -149,9 +169,12 @@ export const mangaList: Manga[] = [
       "https://images.pexels.com/photos/17938034/pexels-photo-17938034.jpeg?auto=compress&cs=tinysrgb&h=650&w=940",
     tertiaryCover:
       "https://images.pexels.com/photos/8108356/pexels-photo-8108356.jpeg?auto=compress&cs=tinysrgb&h=650&w=940",
+    fourthCover:
+      "https://images.pexels.com/photos/34689847/pexels-photo-34689847.jpeg?auto=compress&cs=tinysrgb&h=650&w=940",
     coverGradient: "cover-cobalt",
     rear1Gradient: "cover-moss",
     rear2Gradient: "cover-ink",
+    rear3Gradient: "cover-ember",
     genres: ["Cyberpunk", "Action"],
     status: "Ongoing",
     rating: 4.4,
@@ -167,9 +190,12 @@ export const mangaList: Manga[] = [
       "https://images.pexels.com/photos/14991299/pexels-photo-14991299.jpeg?auto=compress&cs=tinysrgb&h=650&w=940",
     tertiaryCover:
       "https://images.pexels.com/photos/8107897/pexels-photo-8107897.jpeg?auto=compress&cs=tinysrgb&h=650&w=940",
+    fourthCover:
+      "https://images.pexels.com/photos/35431171/pexels-photo-35431171.jpeg?auto=compress&cs=tinysrgb&h=650&w=940",
     coverGradient: "cover-ink",
     rear1Gradient: "cover-ember",
     rear2Gradient: "cover-coral",
+    rear3Gradient: "cover-moon",
     genres: ["Horror", "Mystery"],
     status: "Completed",
     rating: 4.8,
@@ -185,9 +211,12 @@ export const mangaList: Manga[] = [
       "https://images.pexels.com/photos/29666773/pexels-photo-29666773.jpeg?auto=compress&cs=tinysrgb&h=650&w=940",
     tertiaryCover:
       "https://images.pexels.com/photos/8108560/pexels-photo-8108560.jpeg?auto=compress&cs=tinysrgb&h=650&w=940",
+    fourthCover:
+      "https://images.pexels.com/photos/18324265/pexels-photo-18324265.jpeg?auto=compress&cs=tinysrgb&h=650&w=940",
     coverGradient: "cover-ember",
     rear1Gradient: "cover-coral",
     rear2Gradient: "cover-moon",
+    rear3Gradient: "cover-cobalt",
     genres: ["Fantasy", "Adventure"],
     status: "Ongoing",
     rating: 4.5,
@@ -203,9 +232,12 @@ export const mangaList: Manga[] = [
       "https://images.pexels.com/photos/14697730/pexels-photo-14697730.jpeg?auto=compress&cs=tinysrgb&h=650&w=940",
     tertiaryCover:
       "https://images.pexels.com/photos/8107952/pexels-photo-8107952.jpeg?auto=compress&cs=tinysrgb&h=650&w=940",
+    fourthCover:
+      "https://images.pexels.com/photos/10040842/pexels-photo-10040842.jpeg?auto=compress&cs=tinysrgb&h=650&w=940",
     coverGradient: "cover-coral",
     rear1Gradient: "cover-ink",
     rear2Gradient: "cover-moss",
+    rear3Gradient: "cover-ember",
     genres: ["Supernatural", "Romance"],
     status: "Ongoing",
     rating: 4.1,
@@ -221,9 +253,12 @@ export const mangaList: Manga[] = [
       "https://images.pexels.com/photos/35964821/pexels-photo-35964821.jpeg?auto=compress&cs=tinysrgb&h=650&w=940",
     tertiaryCover:
       "https://images.pexels.com/photos/8107857/pexels-photo-8107857.jpeg?auto=compress&cs=tinysrgb&h=650&w=940",
+    fourthCover:
+      "https://images.pexels.com/photos/27698095/pexels-photo-27698095.jpeg?auto=compress&cs=tinysrgb&h=650&w=940",
     coverGradient: "cover-ember",
     rear1Gradient: "cover-moon",
     rear2Gradient: "cover-cobalt",
+    rear3Gradient: "cover-ink",
     genres: ["Thriller", "Drama"],
     status: "Completed",
     rating: 4.7,
@@ -239,9 +274,12 @@ export const mangaList: Manga[] = [
       "https://images.pexels.com/photos/33681521/pexels-photo-33681521.jpeg?auto=compress&cs=tinysrgb&h=650&w=940",
     tertiaryCover:
       "https://images.pexels.com/photos/8108406/pexels-photo-8108406.jpeg?auto=compress&cs=tinysrgb&h=650&w=940",
+    fourthCover:
+      "https://images.pexels.com/photos/33444227/pexels-photo-33444227.jpeg?auto=compress&cs=tinysrgb&h=650&w=940",
     coverGradient: "cover-moss",
     rear1Gradient: "cover-cobalt",
     rear2Gradient: "cover-ink",
+    rear3Gradient: "cover-coral",
     genres: ["Slice of Life", "Comedy"],
     status: "Ongoing",
     rating: 4.3,
