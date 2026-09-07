@@ -34,28 +34,25 @@ export default function MangaCard({ manga, index }: MangaCardProps) {
         <span className="pin pin--tl" aria-hidden="true" />
         <span className="pin pin--br" aria-hidden="true" />
 
-        {/* Rear-3: blurred peacock back layer */}
-        <div className="fan-card fan-card--rear-3 cover-peacock" />
-
-        {/* Rear-2: gradient with photo overlay */}
-        <div className={`fan-card fan-card--rear-2 ${manga.rear2Gradient}`}>
+        {/* Rear card: gradient with photo */}
+        <div className={`fan-card fan-card--rear ${manga.rear2Gradient}`}>
           <img
             src={manga.tertiaryCover}
             alt=""
             loading="lazy"
             draggable={false}
-            style={{ opacity: 0.35 }}
+            style={{ opacity: 0.45 }}
           />
         </div>
 
-        {/* Rear-1: gradient with photo overlay */}
-        <div className={`fan-card fan-card--rear-1 ${manga.rear1Gradient}`}>
+        {/* Middle card: gradient with photo */}
+        <div className={`fan-card fan-card--middle ${manga.rear1Gradient}`}>
           <img
             src={manga.secondaryCover}
             alt=""
             loading="lazy"
             draggable={false}
-            style={{ opacity: 0.4 }}
+            style={{ opacity: 0.5 }}
           />
         </div>
 
@@ -66,7 +63,7 @@ export default function MangaCard({ manga, index }: MangaCardProps) {
             alt={`Cover of ${manga.title}`}
             loading="lazy"
             draggable={false}
-            style={{ opacity: 0.55 }}
+            style={{ opacity: 0.6 }}
           />
           <div className="fan-card__spine" />
           <div className="fan-card__overlay" />

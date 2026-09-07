@@ -41,7 +41,9 @@
 
 @layer components {
   /* ============================================================
-     Manga Card — Four-Layer Fan Stack with Pin Mechanism
+     Manga Card — Three-Card Fan Stack with Pin Mechanism
+     Cards rotate around the bottom-right fixed pivot.
+     Top-left pin releases on hover; bottom-right pin stays fixed.
      ============================================================ */
 
   .manga-item {
@@ -88,19 +90,20 @@
     transform: translateY(-3px);
   }
 
-  /* --- Card layers --- */
+  /* --- Card layers ---
+     transform-origin at bottom-right (100% 100%) so all cards
+     rotate around the fixed pivot point. */
   .fan-card {
     position: absolute;
     inset: 0;
     border-radius: 9px;
     border: 1px solid hsl(0 0% 100% / 0.09);
     box-shadow: 0 10px 22px hsl(267 40% 3% / 0.45);
-    transform-origin: 100% 0%;
+    transform-origin: 100% 100%;
     transition:
-      transform 0.38s cubic-bezier(0.22, 0.85, 0.3, 1.05),
+      transform 0.42s cubic-bezier(0.22, 0.85, 0.3, 1.05),
       box-shadow 0.38s ease,
-      filter 0.38s ease,
-      opacity 0.38s ease;
+      filter 0.38s ease;
     display: flex;
     align-items: flex-end;
     overflow: hidden;
@@ -115,55 +118,52 @@
     display: block;
   }
 
-  /* --- Idle stack: neat, compact, physical --- */
-  .fan-card--rear-3 {
-    z-index: 0;
-    transform: translate(9px, 7px) rotate(3.6deg);
-    filter: blur(2px) brightness(0.5);
-    opacity: 0.5;
-  }
-  .fan-card--rear-2 {
+  /* --- Idle stack: neat, compact, front card dominates --- */
+  .fan-card--rear {
     z-index: 1;
-    transform: translate(5px, 5px) rotate(2.5deg);
-    filter: brightness(0.72);
+    transform: translate(-5px, 5px) rotate(2deg);
+    filter: brightness(0.82);
   }
-  .fan-card--rear-1 {
+
+  .fan-card--middle {
     z-index: 2;
-    transform: translate(2.5px, 2.5px) rotate(1.2deg);
-    filter: brightness(0.86);
+    transform: translate(-2.5px, 2.5px) rotate(1deg);
+    filter: brightness(0.91);
   }
+
   .fan-card--front {
     z-index: 3;
     transform: translate(0, 0) rotate(0deg);
   }
 
-  /* --- Hover/active: diagonal fan --- */
+  /* --- Hover/active: diagonal fan around bottom-right pivot ---
+     Rear card rotates most (swings furthest up-left),
+     middle card rotates medium,
+     front card barely rotates (stays dominant).
+     Progressive transition delays so rear moves first. */
   .manga-item:hover .fan-card,
   .manga-item.is-active .fan-card {
     box-shadow: 0 16px 30px hsl(267 40% 3% / 0.55);
   }
 
+  .manga-item:hover .fan-card--rear,
+  .manga-item.is-active .fan-card--rear {
+    transform: translate(0, 0) rotate(-24deg);
+    filter: brightness(0.88);
+    transition-delay: 0ms;
+  }
+
+  .manga-item:hover .fan-card--middle,
+  .manga-item.is-active .fan-card--middle {
+    transform: translate(0, 0) rotate(-12deg);
+    filter: brightness(0.94);
+    transition-delay: 50ms;
+  }
+
   .manga-item:hover .fan-card--front,
   .manga-item.is-active .fan-card--front {
-    transform: translate(-48px, 60px) rotate(-18deg);
-  }
-  .manga-item:hover .fan-card--rear-1,
-  .manga-item.is-active .fan-card--rear-1 {
-    transform: translate(-24px, 30px) rotate(-9deg);
-    filter: brightness(0.92);
-  }
-  .manga-item:hover .fan-card--rear-2,
-  .manga-item.is-active .fan-card--rear-2 {
-    transform: translate(6px, 3px) rotate(2deg);
-    filter: brightness(0.8);
-  }
-  .manga-item:hover .fan-card--rear-3,
-  .manga-item.is-active .fan-card--rear-3 {
-    transform: translate(20px, 15px) rotate(4.5deg);
-    filter: blur(1.5px) brightness(0.85);
-    opacity: 0.92;
-    transition-duration: 0.5s;
-    transition-delay: 0.03s;
+    transform: translate(0, 0) rotate(-3deg);
+    transition-delay: 100ms;
   }
 
   /* --- Card spine + title on front card --- */
@@ -200,16 +200,19 @@
     background: linear-gradient(to top, hsl(267 40% 3% / 0.55), transparent);
   }
 
-  /* --- Metallic Pins --- */
+  /* --- Metallic Pins ---
+     Circular punched-hole-and-rivet fasteners.
+     Top-left pin releases on hover; bottom-right pin is the
+     fixed pivot and never animates. */
   .pin {
     position: absolute;
-    width: 15px;
-    height: 15px;
-    z-index: 6;
+    width: 16px;
+    height: 16px;
+    z-index: 10;
     pointer-events: none;
     transition:
-      transform 0.32s cubic-bezier(0.3, 0.8, 0.3, 1.3),
-      opacity 0.28s ease;
+      transform 0.38s cubic-bezier(0.3, 0.8, 0.3, 1.2),
+      opacity 0.32s ease;
   }
   .pin::before {
     content: "";
@@ -235,19 +238,22 @@
     box-shadow: 0 1px 2px hsl(267 40% 2% / 0.6);
   }
 
+  /* Top-left pin: sits at the corner, releases on hover */
   .pin--tl {
-    top: 7px;
-    left: 7px;
+    top: 6px;
+    left: 6px;
   }
+
+  /* Bottom-right pin: fixed pivot — never moves */
   .pin--br {
-    bottom: 7px;
-    right: 7px;
+    bottom: 6px;
+    right: 6px;
   }
 
   .manga-item:hover .pin--tl,
   .manga-item.is-active .pin--tl {
-    transform: translate(-6px, -7px) rotate(-16deg) scale(0.85);
-    opacity: 0;
+    transform: translate(-7px, -7px) rotate(-14deg);
+    opacity: 0.25;
   }
 
   /* --- Metadata below the card --- */
@@ -288,22 +294,6 @@
   }
   .cover-ink {
     background: linear-gradient(150deg, #202033 0%, #4a4766 53%, #b86a56 100%);
-  }
-  .cover-peacock {
-    background:
-      radial-gradient(
-        circle at 72% 28%,
-        hsl(45 75% 62% / 0.85) 0%,
-        hsl(45 75% 62% / 0) 32%
-      ),
-      linear-gradient(
-        160deg,
-        #0b3d3a 0%,
-        #146b5e 35%,
-        #1f8a70 58%,
-        #2c5f8a 78%,
-        #232a5e 100%
-      );
   }
 
   /* --- Category navigation --- */
@@ -359,18 +349,15 @@
 
   .manga-item:hover .fan-card--front,
   .manga-item.is-active .fan-card--front,
-  .manga-item:hover .fan-card--rear-1,
-  .manga-item.is-active .fan-card--rear-1,
-  .manga-item:hover .fan-card--rear-2,
-  .manga-item.is-active .fan-card--rear-2,
-  .manga-item:hover .fan-card--rear-3,
-  .manga-item.is-active .fan-card--rear-3,
+  .manga-item:hover .fan-card--middle,
+  .manga-item.is-active .fan-card--middle,
+  .manga-item:hover .fan-card--rear,
+  .manga-item.is-active .fan-card--rear,
   .manga-item:hover .pin--tl,
   .manga-item.is-active .pin--tl,
   .manga-item:hover .fan-stack,
   .manga-item.is-active .fan-stack {
     transform: none !important;
     filter: none !important;
-    opacity: 1 !important;
   }
 }
